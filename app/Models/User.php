@@ -45,13 +45,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function guru($id) {
-        $guru = Guru::where('nip', $id)->first();
-        return $guru;
+    public function guru()
+    {
+        return $this->hasOne(Guru::class, 'user_id');
     }
 
-    public function siswa($id) {
-        $siswa = Siswa::where('nis', $id)->first();
-        return $siswa;
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class, 'user_id');
     }
 }

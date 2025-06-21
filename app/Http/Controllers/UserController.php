@@ -23,8 +23,10 @@ class UserController extends Controller
     {
         $user = User::OrderBy('roles', 'asc')->get();
         $siswaList = Siswa::with('user')->OrderBy('id', 'asc')->get();
+        $siswalist = Siswa::all();
         return view('pages.admin.user.index', compact('user', 'siswaList'));
     }
+
 
     /**
      * Show the form for creating a new resource.

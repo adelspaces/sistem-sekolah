@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\Kelas;
+use App\Models\Jurusan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 
@@ -16,9 +17,10 @@ class KelasController extends Controller
      */
     public function index()
     {
-        $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
-        $guru = Guru::orderBy('nama', 'asc')->get();
-        return view('pages.admin.kelas.index', compact('kelas', 'guru'));
+        $kelas = Kelas::with(['guru', 'jurusan'])->get();
+        $gurus = Guru::with('jurusan')->get();
+        $jurusans = Jurusan::all();
+        return view('pages.admin.kelas.index', compact('kelas', 'gurus', 'jurusans'));
     }
 
     /**
@@ -42,15 +44,20 @@ class KelasController extends Controller
 
         $this->validate($request, [
             'nama_kelas' => 'required|unique:kelas',
-            'guru_id' => 'required|unique:kelas'
+            'guru_id' => 'required|unique:kelas',
+            'jurusan_id' => 'required|exists:jurusans,id'
         ], [
             'nama_kelas.unique' => 'Nama Kelas sudah ada',
-            'guru_id.unique' => 'Guru sudah memiliki kelas'
+            'guru_id.unique' => 'Guru sudah memiliki kelas',
         ]);
 
-        Kelas::create($request->all());
+        Kelas::create([
+            'nama_kelas' => $request->nama_kelas,
+            'guru_id' => $request->guru_id,
+            'jurusan_id' => $request->jurusan_id,
+        ]);
 
-        return redirect()->route('kelas.index')->with('success', 'Data berhasil disimpan');
+        return redirect()->back()->with('success', 'Data kelas berhasil ditambahkan');
     }
 
     /**
@@ -75,7 +82,8 @@ class KelasController extends Controller
         // $id = Crypt::decrypt($id);
         $kelas = Kelas::findOrFail($id);
         $guru = Guru::all();
-        return view('pages.admin.kelas.edit', compact('kelas', 'guru'));
+        $jurusans = Jurusan::all();
+        return view('pages.admin.kelas.edit', compact('kelas', 'guru', 'jurusans'));
     }
 
     /**
@@ -88,9 +96,11 @@ class KelasController extends Controller
     public function update(Request $request, $id)
     {
         $this->validate($request, [
-            'guru_id' => 'required|unique:kelas'
+            'guru_id' => 'required|unique:kelas',
+            'jurusan_id' => 'required|unique:kelas'
         ], [
-            'guru_id.unique' => 'Guru sudah memiliki kelas'
+            'guru_id.unique' => 'Guru sudah memiliki kelas',
+            'jurusan_id.unique' => 'Jurusan untuk kelas ini sudah ada'
         ]);
 
         $data = $request->all();
@@ -108,7 +118,9 @@ class KelasController extends Controller
      */
     public function destroy($id)
     {
-        Kelas::find($id)->delete();
-        return back()->with('success', 'Data kelas berhasil dihapus!');
+        $kelas = Kelas::findOrFail($id);
+        $kelas->delete();
+
+        return redirect()->route('kelas.index')->with('success', 'Data kelas berhasil dihapus');
     }
 }

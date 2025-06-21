@@ -8,6 +8,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
+
+
 
 class GuruController extends Controller
 {
@@ -30,8 +33,10 @@ class GuruController extends Controller
      */
     public function create()
     {
-        abort(404);
+        $mapels = Mapel::all();
+        return view('pages.guru.create', compact('mapels'));
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -39,38 +44,86 @@ class GuruController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    // public function store(Request $request)
+    // {
+
+    //     $this->validate($request, [
+    //         'nama' => 'required',
+    //         'nip' => 'required|unique:gurus',
+    //         'no_telp' => 'required',
+    //         'alamat' => 'required',
+    //         'mapel_id' => 'required',
+    //         'foto' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+    //     ], [
+    //         'nip.unique' => 'NIP sudah terdaftar',
+    //     ]);
+
+    //     if(isset($request->foto)){
+    //         $file = $request->file('foto');
+    //         $namaFoto = time() . '.' . $file->getClientOriginalExtension();
+    //         $foto = $file->storeAs('images/guru', $namaFoto, 'public');
+    //     }
+
+    //     $guru = new Guru;
+    //     $guru->nama = $request->nama;
+    //     $guru->nip = $request->nip;
+    //     $guru->no_telp = $request->no_telp;
+    //     $guru->alamat = $request->alamat;
+    //     $guru->mapel_id = $request->mapel_id;
+    //     $guru->foto = $foto;
+    //     $guru->save();
+
     public function store(Request $request)
     {
-
-        $this->validate($request, [
-            'nama' => 'required',
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6',
             'nip' => 'required|unique:gurus',
             'no_telp' => 'required',
             'alamat' => 'required',
-            'mapel_id' => 'required',
-            'foto' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'mapel_id' => 'required|exists:mapels,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
-            'nip.unique' => 'NIP sudah terdaftar',
+            'nip.unique' => 'NIP sudah terdaftar.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'mapel_id.required' => 'Mata pelajaran wajib dipilih.',
         ]);
 
-        if(isset($request->foto)){
+        // Simpan ke tabel users
+        $user = User::create([
+            'name' => $request->nama,
+            'email' => $request->email,
+            'nip' => $request->nip,
+            'roles' => 'guru',
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Upload foto jika ada
+        $foto = null;
+        if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $namaFoto = time() . '.' . $file->getClientOriginalExtension();
             $foto = $file->storeAs('images/guru', $namaFoto, 'public');
         }
 
-        $guru = new Guru;
-        $guru->nama = $request->nama;
-        $guru->nip = $request->nip;
-        $guru->no_telp = $request->no_telp;
-        $guru->alamat = $request->alamat;
-        $guru->mapel_id = $request->mapel_id;
-        $guru->foto = $foto;
-        $guru->save();
+        // Simpan ke tabel gurus
+        Guru::create([
+            'user_id' => $user->id,
+            'nama' => $request->nama,
+            'nip' => $request->nip,
+            'no_telp' => $request->no_telp,
+            'alamat' => $request->alamat,
+            'mapel_id' => $request->mapel_id,
+            'foto' => $foto,
+        ]);
 
-
-        return redirect()->route('guru.index')->with('success', 'Data guru berhasil ditambahkan');
+        return redirect()->route('guru.index')->with('success', 'Guru berhasil ditambahkan!');
     }
+
+
+    //     return redirect()->route('guru.index')->with('success', 'Data guru berhasil ditambahkan');
+    // }
 
     /**
      * Display the specified resource.
@@ -123,10 +176,9 @@ class GuruController extends Controller
         $guru->alamat = $request->input('alamat');
         $guru->mapel_id = $request->input('mapel_id');
 
-        if($request->hasFile('foto'))
-        {
-            $lokasi = 'images/guru/'.$guru->foto;
-            if(File::exists($lokasi)) {
+        if ($request->hasFile('foto')) {
+            $lokasi = 'images/guru/' . $guru->foto;
+            if (File::exists($lokasi)) {
                 File::delete($lokasi);
             }
             $foto = $request->file('foto');
@@ -153,7 +205,7 @@ class GuruController extends Controller
         $guru->delete();
 
         // Hapus data user
-        if($user = User::where('id', $guru->user_id)->first()){
+        if ($user = User::where('id', $guru->user_id)->first()) {
             $user->delete();
         }
 

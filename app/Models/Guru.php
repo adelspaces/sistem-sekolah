@@ -9,9 +9,23 @@ class Guru extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nip', 'nama', 'mapel_id', 'no_telp', 'alamat', 'foto'];
+    protected $fillable = [
+        'user_id',
+        'nama',
+        'nip',
+        'no_telp',
+        'alamat',
+        'mapel_id',
+        'foto'
+    ];
 
-    public function mapel() {
-        return $this->belongsTo(Mapel::class, 'mapel_id');
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function mapel()
+    {
+        return $this->belongsTo(Mapel::class);
     }
 }

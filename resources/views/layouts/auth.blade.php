@@ -14,8 +14,8 @@
                 <div class="row">
                     <div class="col-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3 col-lg-6 offset-lg-3">
                         <div class="login-brand">
-                            <img src="{{ URL::asset($pengaturan->logo) ?? 'https://via.placeholder.com/300' }}" alt="logo" width="100" class="shadow-lights">
-                            <p class="mt-4">{{ $pengaturan->name ?? config('app.name') }}</p>
+                            <img src="{{ isset($pengaturan) && $pengaturan->logo ? URL::asset($pengaturan->logo) : 'https://akupintar.id/documents/20143/0/default_logo_sekolah_pintar.png/9e3fd3b1-ee82-c891-4cd7-1e494ff374b8?version=2.0&t=1591343449773&imagePreview=1' }}">
+                            <p class="mt-4">{{ isset($pengaturan) ? $pengaturan->name : config('app.name') }}</p>
                         </div>
                         @if(session()->has('info'))
                         <div class="alert alert-primary">
@@ -28,9 +28,9 @@
                         </div>
                         @endif
                         @yield('content')
-                        <div class="simple-footer">
-                            Copyright &copy; Pixel Overture {{ date('Y') }}
-                        </div>
+                        {{-- <div class="simple-footer">
+                            Copyright &copy; Adelia {{ date('Y') }}
+                        </div> --}}
                     </div>
                 </div>
             </div>

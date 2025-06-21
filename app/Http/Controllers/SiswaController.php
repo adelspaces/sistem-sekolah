@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
@@ -40,7 +41,6 @@ class SiswaController extends Controller
      */
     public function store(Request $request)
     {
-
         $this->validate($request, [
             'nama' => 'required',
             'nis' => 'required|unique:siswas',
@@ -53,12 +53,22 @@ class SiswaController extends Controller
             'kelas_id.unique' => 'Siswa sudah terdaftar di kelas ini',
         ]);
 
+        // 1. Simpan user dulu
+        $user = User::create([
+            'name' => $request->nama,
+            'email' => strtolower(str_replace(' ', '', $request->nama)) . '@example.com', // contoh dummy email
+            'password' => bcrypt('password123'), // default password
+            'level' => 'siswa'
+        ]);
+
+        // 2. Simpan foto
         if (isset($request->foto)) {
             $file = $request->file('foto');
             $namaFoto = time() . '.' . $file->getClientOriginalExtension();
             $foto = $file->storeAs('images/siswa', $namaFoto, 'public');
         }
 
+        // 3. Simpan siswa dengan user_id
         $siswa = new Siswa;
         $siswa->nama = $request->nama;
         $siswa->nis = $request->nis;
@@ -66,8 +76,8 @@ class SiswaController extends Controller
         $siswa->alamat = $request->alamat;
         $siswa->kelas_id = $request->kelas_id;
         $siswa->foto = $foto;
+        $siswa->user_id = $user->id; // relasi ke user
         $siswa->save();
-
 
         return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil ditambahkan');
     }

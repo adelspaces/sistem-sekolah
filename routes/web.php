@@ -55,10 +55,10 @@ Route::group(['middleware' => ['auth', 'checkRole:siswa']], function () {
     Route::get('/tugas-download/{id}', [TugasController::class, 'download'])->name('siswa.tugas.download');
     Route::post('/kirim-jawaban', [TugasController::class, 'kirimJawaban'])->name('kirim-jawaban');
 });
-Route::group(['middleware' => ['auth', 'checkRole:orangtua']], function () {
-    Route::get('/orangtua/dashboard', [HomeController::class, 'orangtua'])->name('orangtua.dashboard');
-    Route::get('/orangtua/tugas/siswa', [TugasController::class, 'orangtua'])->name('orangtua.tugas.siswa');
-});
+// Route::group(['middleware' => ['auth', 'checkRole:orangtua']], function () {
+//     Route::get('/orangtua/dashboard', [HomeController::class, 'orangtua'])->name('orangtua.dashboard');
+//     Route::get('/orangtua/tugas/siswa', [TugasController::class, 'orangtua'])->name('orangtua.tugas.siswa');
+// });
 Route::group(['middleware' => ['auth', 'checkRole:admin']], function () {
     Route::get('/admin/dashboard', [HomeController::class, 'admin'])->name('admin.dashboard');
     Route::resource('jurusan', JurusanController::class);
@@ -71,3 +71,6 @@ Route::group(['middleware' => ['auth', 'checkRole:admin']], function () {
     Route::resource('pengumuman-sekolah', PengumumanSekolahController::class);
     Route::resource('pengaturan', PengaturanController::class);
 });
+
+Route::resource('guru', App\Http\Controllers\GuruController::class);
+Route::resource('guru', GuruController::class);

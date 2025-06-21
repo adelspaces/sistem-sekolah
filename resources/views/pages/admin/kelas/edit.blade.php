@@ -33,6 +33,19 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                <div class="form-group">
+                                    <label for="jurusan_id">Jurusan</label>
+                                    <select id="jurusan_id" name="jurusan_id" class="select2bs4 form-control @error('jurusan_id') is-invalid @enderror">
+                                        <option value="">-- Pilih Jurusan --</option>
+                                        @foreach ($jurusan as $data )
+                                            <option value="{{ $data->id }}"
+                                            @if ($kelas->jurusan_id == $data->id)
+                                                selected
+                                            @endif
+                                        >{{ $data->nama_jurusan }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="card-footer">
                                     <button type="submit" class="btn btn-primary"><i class="nav-icon fas fa-save"></i> &nbsp; Simpan Perubahan</button>
                                 </div>
